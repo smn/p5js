@@ -1,5 +1,4 @@
 var last_verts;
-var last_mouseX, last_mouseY;
 var vert_history = [];
 
 function setup() {
@@ -29,9 +28,9 @@ function contains(list, item) {
 }
 
 function get_target() {
-  x = Math.floor(windowWidth * Math.random());
-  y = Math.floor(windowHeight * Math.random());
-  return new p5.Vector(x, y);
+  return new p5.Vector(
+    Math.floor(windowWidth * Math.random()),
+    Math.floor(windowHeight * Math.random()));
 }
 
 function draw() {
