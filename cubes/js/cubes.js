@@ -116,4 +116,7 @@ function draw() {
   // move to the center
   translate(windowWidth/2, windowHeight/2);
   cube.draw(foreground_color);
+  cube.rotate_z(1);
+  cube.rotate_x(1);
+  cube.rotate_y(1);
 }
