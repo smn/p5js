@@ -14,6 +14,12 @@ NOTE:
 */
 
 var Cube = function (x, y, z, size) {
+  this.faces = this.get_faces();
+  this.edges = this.get_edges();
+  this.nodes = this.get_nodes(x, y, z, size);
+};
+
+Cube.prototype.get_edges = function () {
   var edge0  = [0, 1];
   var edge1  = [1, 3];
   var edge2  = [3, 2];
@@ -26,8 +32,17 @@ var Cube = function (x, y, z, size) {
   var edge9  = [1, 5];
   var edge10 = [2, 6];
   var edge11 = [3, 7];
-  this.edges  = [edge0, edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8, edge9, edge10, edge11];
-  this.nodes = this.get_nodes(x, y, z, size);
+  return [edge0, edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8, edge9, edge10, edge11];
+};
+
+Cube.prototype.get_faces = function () {
+  var face0 = [0, 1, 4, 5];
+  var face1 = [0, 1, 2, 3];
+  var face2 = [2, 3, 6, 7];
+  var face3 = [4, 5, 6, 7];
+  var face4 = [0, 2, 4, 6];
+  var face5 = [1, 3, 5, 7];
+  return [face0, face1, face2, face3, face4, face5];
 };
 
 Cube.prototype.get_nodes = function (x, y, z, size) {
@@ -81,7 +96,7 @@ Cube.prototype.rotate_x = function(theta) {
   }
 };
 
-Cube.prototype.draw = function(colour) {
+Cube.prototype.draw_edges = function(colour) {
   stroke(colour);
   for (var e = 0; e < this.edges.length; e++) {
       var n0 = this.edges[e][0];
@@ -92,6 +107,24 @@ Cube.prototype.draw = function(colour) {
   }
 };
 
+Cube.prototype.draw_faces = function (colour) {
+  for(var f=0; f<this.faces.length; f++) {
+      rgba = colour.rgba;
+      fill(rgba[0], rgba[1], rgba[2], (rgba[3] / this.faces.length) * f);
+      var n0 = this.faces[f][0];
+      var n1 = this.faces[f][1];
+      var n2 = this.faces[f][2];
+      var n3 = this.faces[f][3];
+      var node0 = this.nodes[n0];
+      var node1 = this.nodes[n1];
+      var node2 = this.nodes[n2];
+      var node3 = this.nodes[n3];
+      quad(node0[0], node0[1], node1[0], node1[1], node3[0], node3[1], node2[0], node2[1]);
+  }
+
+  noFill();
+};
+
 function setup() {
   foreground_color = color(0, 180, 150, 255);
   background_color = color(33, 33, 33, 255);
@@ -99,9 +132,6 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   angleMode(DEGREES);
   cube = new Cube(0, 0, 0, 100);
-  cube.rotate_z(30);
-  cube.rotate_y(30);
-  cube.rotate_x(30);
 }
 
 
@@ -115,8 +145,11 @@ function draw() {
   background(background_color);
   // move to the center
   translate(windowWidth/2, windowHeight/2);
-  cube.draw(foreground_color);
-  cube.rotate_z(1);
-  cube.rotate_x(1);
-  cube.rotate_y(1);
+  cube.draw_edges(foreground_color);
+  cube.draw_faces(foreground_color);
+  if(!mouseIsPressed) {
+    cube.rotate_z(1);
+    cube.rotate_x(1);
+    cube.rotate_y(1);
+  }
 }
