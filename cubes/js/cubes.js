@@ -17,6 +17,10 @@ NOTE:
 */
 
 var Cube = function (x, y, z, size) {
+  this.x = x;
+  this.y = y;
+  this.z = z;
+  this.size = size;
   this.faces = this.get_faces();
   this.edges = this.get_edges();
   this.nodes = this.get_nodes(x, y, z, size);
@@ -48,10 +52,14 @@ Cube.prototype.get_faces = function () {
 
 Cube.prototype.get_nodes = function (x, y, z, s) {
   return [
-    [x,     y,     z], [x,     y,     z + s],
-    [x,     y + s, z], [x,     y + s, z + s],
-    [x + s, y,     z], [x + s, y,     z + s],
-    [x + s, y + s, z], [x + s, y + s, z + s]
+    [x - s, y - s, z - s],
+    [x - s, y - s, z + s],
+    [x - s, y + s, z - s],
+    [x - s, y + s, z + s],
+    [x + s, y - s, z - s],
+    [x + s, y - s, z + s],
+    [x + s, y + s, z - s],
+    [x + s, y + s, z + s]
   ];
 };
 
@@ -62,12 +70,12 @@ Cube.prototype.rotate_z = function(theta) {
 
   for (var n=0; n<this.nodes.length; n++) {
       node = this.nodes[n];
-      x = node[0];
-      y = node[1];
-      z = node[2];
-      node[0] = x * cos_t - y * sin_t;
-      node[1] = y * cos_t + x * sin_t;
-      node[2] = z;
+      x = node[0] - this.x;
+      y = node[1] - this.y;
+      z = node[2] - this.z;
+      node[0] = (x * cos_t - y * sin_t) + this.x;
+      node[1] = (y * cos_t + x * sin_t) + this.y;
+      node[2] = z + this.z;
   }
 };
 
@@ -78,12 +86,12 @@ Cube.prototype.rotate_y = function(theta) {
 
   for (var n=0; n<this.nodes.length; n++) {
       node = this.nodes[n];
-      x = node[0];
-      y = node[1];
-      z = node[2];
-      node[0] = x * cos_t + z * sin_t;
-      node[1] = y;
-      node[2] = -sin_t * x + cos_t * z;
+      x = node[0] - this.x;
+      y = node[1] - this.y;
+      z = node[2] - this.z;
+      node[0] = (x * cos_t + z * sin_t) + this.x;
+      node[1] = y + this.y;
+      node[2] = (-sin_t * x + cos_t * z) + this.z;
   }
 };
 
@@ -94,12 +102,12 @@ Cube.prototype.rotate_x = function(theta) {
 
   for (var n=0; n<this.nodes.length; n++) {
       node = this.nodes[n];
-      x = node[0];
-      y = node[1];
-      z = node[2];
-      node[0] = x;
-      node[1] = y * cos_t - z * sin_t;
-      node[2] = z * cos_t + y * sin_t;
+      x = node[0] - this.x;
+      y = node[1] - this.y;
+      z = node[2] - this.z;
+      node[0] = x + this.x;
+      node[1] = (y * cos_t - z * sin_t) + this.y;
+      node[2] = (z * cos_t + y * sin_t) + this.z;
   }
 };
 
@@ -123,15 +131,15 @@ var normalize_vector = function (v) {
   return [v[0]/d, v[1]/d, v[2]/d];
 };
 
-Cube.prototype.draw_faces = function (colour) {
+Cube.prototype.draw_faces = function (fill_colour, stroke_colour) {
   for(var f=0; f<this.faces.length; f++) {
       var fnorm = this.face_normal(this.faces[f]);
       if(fnorm[2] < 0) {
         var l = max(0, dot_product(light_vector, normalize_vector(fnorm)));
         l = background_light + (1 - background_light) * l;
-        var c = lerpColor(color(0, 0, 0), foreground_color, l);
+        var c = lerpColor(color(0, 0, 0), fill_colour, l);
         fill(c);
-        stroke(c);
+        stroke(stroke_colour || c);
         var face = this.faces[f];
         quad(this.nodes[face[0]][0], this.nodes[face[0]][1],
              this.nodes[face[1]][0], this.nodes[face[1]][1],
@@ -164,6 +172,23 @@ Cube.prototype.face_normal = function (face) {
     return v3;
 };
 
+Cube.prototype.at_rest = function() {
+  this.rotate_x(58);
+  this.rotate_y(33);
+  this.rotate_z(37);
+};
+
+Cube.prototype.contains = function (x, y) {
+  x = x - windowWidth/2;
+  y = y - windowHeight/2;
+  console.log('contains?', x, y);
+  if(((this.x - this.size) <= x <= (this.x + this.size)) &&
+     ((this.y - this.size) <= y <= (this.y + this.size))) {
+    return true;
+  }
+  return false;
+};
+
 function setup() {
   // foreground_color = color(0, 180, 150, 255);
   foreground_color = color(255, 255, 255);
@@ -172,13 +197,29 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   angleMode(DEGREES);
   light_vector = normalize_vector(light_vector);
-  cube = new Cube(0, 0, 0, 100);
+  x_space = 280;
+  y_space = 230;
+  cols = windowWidth / x_space;
+  rows = windowHeight / y_space;
+  for(var j = floor(-rows/2) - 1; j <= floor(rows/2); j++) {
+    if(abs(j) % 2 === 0) {
+      offset = x_space;
+    } else {
+      offset = x_space + (x_space / 2);
+    }
+    for(var i = floor(-cols/2) - 1; i < floor(cols/2); i++) {
+      cube = new Cube(offset + (i * x_space), j * y_space, 0, 100);
+      cube.at_rest();
+      registry.push(cube);
+    }
+  }
 }
 
-
 var mouseDragged = function() {
+  registry.forEach(function(cube) {
     cube.rotate_y(mouseX - pmouseX);
     cube.rotate_x(mouseY - pmouseY);
+  });
 };
 
 function draw() {
@@ -187,10 +228,14 @@ function draw() {
   // move to the center
   translate(windowWidth/2, windowHeight/2);
   // cube.draw_edges(foreground_color);
-  cube.draw_faces(foreground_color);
-  if(!mouseIsPressed) {
-    cube.rotate_z(1);
-    cube.rotate_x(1);
+  // cube.draw_faces(foreground_color);
+  // if(!mouseIsPressed) {
+    // cube.rotate_z(1);
+    // cube.rotate_x(1);
+    // cube.rotate_y(1);
+  // }
+  registry.forEach(function(cube) {
+    cube.draw_faces(foreground_color);
     cube.rotate_y(1);
-  }
+  });
 }
