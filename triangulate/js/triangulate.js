@@ -1,18 +1,18 @@
 var triangle_width = 30;
 var triangles;
-var input_field;
+var select_field;
 
 function setup () {
-    input_field = createSelect();
-    input_field.option('./img.jpg');
-    input_field.option('./img2.jpg');
-    input_field.position(0, 400);
-    input_field.size(300);
-    input_field.changed(function () {
-        load_image(input_field.value());
+    select_field = createSelect();
+    select_field.option('./img.jpg');
+    select_field.option('./img2.jpg');
+    select_field.position(0, 400);
+    select_field.size(300);
+    select_field.changed(function () {
+        load_image(select_field.value());
     });
 
-    load_image(input_field.value());
+    load_image(select_field.value());
 };
 
 function load_image(url) {
@@ -26,16 +26,16 @@ function load_image(url) {
                 triangles.push([i, j,
                                 i + triangle_width, j,
                                 i + triangle_width, j + triangle_width,
-                                get(i + triangle_width,
-                                    i + triangle_width)]);
+                                get(i + triangle_width / 2,
+                                    i + triangle_width / 2)]);
                 triangles.push([i, j,
                                 i + triangle_width, j + triangle_width,
                                 i, j + triangle_width,
-                                get(i + triangle_width,
-                                    j + triangle_width)]);
+                                get(i + triangle_width / 2,
+                                    j + triangle_width / 2)]);
             }
         }
-        input_field.position(0, img.height + 10);
+        select_field.position(0, img.height + 10);
     });
     noStroke();
 }
