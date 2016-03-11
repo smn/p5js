@@ -23,11 +23,14 @@ function load_image(url) {
         loadPixels();
         for(var i = 0; i < img.width; i += triangle_width) {
             for(var j = 0; j < img.height; j += triangle_width) {
+                if((i + triangle_width) > img.width &&
+                   (j + triangle_width) > img.height)
+                    return;
+
                 triangles.push([i, j,
                                 i + triangle_width, j,
                                 i + triangle_width, j + triangle_width,
-                                get(i + triangle_width / 2,
-                                    i + triangle_width / 2)]);
+                                get(i, j)]);
                 triangles.push([i, j,
                                 i + triangle_width, j + triangle_width,
                                 i, j + triangle_width,
